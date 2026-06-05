@@ -1,32 +1,10 @@
-import Image from "next/image";
-import { getLatestIntelligence } from "@/lib/intelligence";
+import { getLatestIntelligence, type Product, type Event } from "@/lib/intelligence";
 
-// 产品数据类型
-interface Product {
-  id: string;
-  name: string;
-  tagline: string;
-  description: string;
-  url: string;
-  votes: number;
-  tags: string[];
-  launchedAt: string;
-}
+// ─── Fallback 数据（Folio Pipeline 未就绪时的降级展示） ───
 
-// 活动数据类型
-interface Event {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  url: string;
-  type: "online" | "offline" | "hybrid";
-}
-
-// 模拟数据（后续由 Folio 情报引擎替换）
-const MOCK_PRODUCTS: Product[] = [
+const FALLBACK_PRODUCTS: Product[] = [
   {
-    id: "1",
+    id: "fb-1",
     name: "Claude 4.0",
     tagline: "Anthropic 最新旗舰模型，推理能力全面升级",
     description: "支持 200K context window，工具调用更精准，代码生成质量大幅提升。",
@@ -34,9 +12,13 @@ const MOCK_PRODUCTS: Product[] = [
     votes: 247,
     tags: ["LLM", "推理", "AI Agent"],
     launchedAt: "2026-06-05",
+    stars: "—",
+    growth: "—",
+    launchClass: "PRODUCT",
+    source: "Mock",
   },
   {
-    id: "2",
+    id: "fb-2",
     name: "Cursor 2.0",
     tagline: "AI Native 代码编辑器，重新定义开发体验",
     description: "深度集成 GPT-4o，支持多文件编辑、智能重构、实时代码审查。",
@@ -44,9 +26,13 @@ const MOCK_PRODUCTS: Product[] = [
     votes: 189,
     tags: ["开发工具", "AI Coding", "编辑器"],
     launchedAt: "2026-06-03",
+    stars: "—",
+    growth: "—",
+    launchClass: "TOOL",
+    source: "Mock",
   },
   {
-    id: "3",
+    id: "fb-3",
     name: "Vercel v4",
     tagline: "边缘全栈平台，史上最快部署体验",
     description: "支持 Edge Functions、ISR、全球 200+ 节点，AI 应用首选部署平台。",
@@ -54,31 +40,68 @@ const MOCK_PRODUCTS: Product[] = [
     votes: 156,
     tags: ["部署", "边缘计算", "全栈"],
     launchedAt: "2026-06-01",
+    stars: "—",
+    growth: "—",
+    launchClass: "FRAMEWORK",
+    source: "Mock",
   },
 ];
 
-const MOCK_EVENTS: Event[] = [
+const FALLBACK_EVENTS: Event[] = [
   {
-    id: "1",
+    id: "fe-1",
     title: "WAIC 2026 · AI 开发者大会",
     date: "2026-07-15",
     location: "上海世博中心",
-    url: "https://we.aiconference.com",
+    url: "https://waiconference.com",
     type: "offline",
+    description: "",
+    time: "",
+    source: "Mock",
   },
   {
-    id: "2",
+    id: "fe-2",
     title: "Agent Summit · 智能体生态峰会",
     date: "2026-06-20",
     location: "线上 + 北京",
     url: "https://agentsummit.ai",
     type: "hybrid",
+    description: "",
+    time: "",
+    source: "Mock",
   },
 ];
 
+// ─── 辅助函数 ───
+
+function formatVotes(stars: string, votes: number): string {
+  // 优先使用 Folio 的 stars 字段（如 "372.1k"），否则用 votes 数值
+  if (stars && stars !== "—" && stars !== "0") return stars;
+  if (votes >= 1000) return `${(votes / 1000).toFixed(1)}k`;
+  return String(votes);
+}
+
+function launchClassBadge(lc: string): { label: string; color: string } {
+  const map: Record<string, { label: string; color: string }> = {
+    PRODUCT: { label: "产品", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+    TOOL: { label: "工具", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+    FRAMEWORK: { label: "框架", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
+    LIBRARY: { label: "库", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  };
+  return map[lc] || { label: lc, color: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" };
+}
+
+// ─── 页面组件 ───
+
 export default async function Home() {
-  // 后续接入：const intelligence = await getLatestIntelligence();
-  
+  const intelligence = await getLatestIntelligence();
+
+  // Folio 数据可用时使用真实数据，否则降级到 fallback
+  const hasFolioData = intelligence.products.length > 0;
+  const products = hasFolioData ? intelligence.products : FALLBACK_PRODUCTS;
+  const events = hasFolioData ? intelligence.events : FALLBACK_EVENTS;
+  const pulse = intelligence.pulse;
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950">
       {/* Header */}
@@ -124,6 +147,31 @@ export default async function Home() {
             每一个值得被看见的 AI 产品和时刻，都在这里。
             展飞智媒聚合全球 AI Native 新品与活动，让创造者被发现，让趋势被看见。
           </p>
+
+          {/* Pulse Bar — Folio 数据可用时展示 */}
+          {pulse && (
+            <div className="mx-auto mb-8 max-w-2xl rounded-2xl border border-blue-200 bg-blue-50/50 p-5 dark:border-blue-800 dark:bg-blue-950/20">
+              <div className="flex items-center justify-center gap-8 text-sm">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{pulse.newToday}</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">今日新品</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{pulse.newGrowth}</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">增长趋势</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{pulse.hotProject}</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">热门项目</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-zinc-700 dark:text-zinc-300">{pulse.hotStars}</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">星数</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-center gap-4">
             <a
               href="#products"
@@ -148,7 +196,9 @@ export default async function Home() {
                 最新 AI 新品
               </h2>
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                过去 7 天发布，由 Folio 情报引擎自动聚合
+                {hasFolioData
+                  ? `Folio 情报引擎实时聚合 · ${intelligence.lastUpdated ? new Date(intelligence.lastUpdated).toLocaleDateString("zh-CN") : ""}`
+                  : "Folio 情报引擎接入中，当前展示示例数据"}
               </p>
             </div>
             <a href="#" className="text-sm text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
@@ -157,41 +207,57 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {MOCK_PRODUCTS.map((product) => (
-              <article
-                key={product.id}
-                className="group rounded-2xl border border-zinc-200 bg-white p-6 transition hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-              >
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 text-sm font-bold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
-                    {product.name.charAt(0)}
-                  </div>
-                  <button className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1 text-sm transition hover:border-orange-300 hover:bg-orange-50 dark:border-zinc-700 dark:hover:border-orange-600 dark:hover:bg-orange-950/30">
-                    <span>▲</span>
-                    <span className="text-zinc-600 dark:text-zinc-400">{product.votes}</span>
-                  </button>
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                  {product.name}
-                </h3>
-                <p className="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                  {product.tagline}
-                </p>
-                <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-500">
-                  {product.description}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                    >
-                      {tag}
+            {products.map((product) => {
+              const badge = launchClassBadge(product.launchClass);
+              return (
+                <article
+                  key={product.id}
+                  className="group relative rounded-2xl border border-zinc-200 bg-white p-6 transition hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                >
+                  {/* Launch class badge */}
+                  {product.launchClass && product.launchClass !== "PRODUCT" && (
+                    <span className={`absolute right-4 top-4 rounded-full px-2 py-0.5 text-xs font-medium ${badge.color}`}>
+                      {badge.label}
                     </span>
-                  ))}
-                </div>
-              </article>
-            ))}
+                  )}
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 text-sm font-bold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
+                      {product.name.charAt(0)}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <button className="flex items-center gap-1.5 rounded-full border border-zinc-200 px-3 py-1 text-sm transition hover:border-orange-300 hover:bg-orange-50 dark:border-zinc-700 dark:hover:border-orange-600 dark:hover:bg-orange-950/30">
+                        <span>▲</span>
+                        <span className="text-zinc-600 dark:text-zinc-400">
+                          {formatVotes(product.stars, product.votes)}
+                        </span>
+                      </button>
+                      {product.growth && product.growth !== "—" && (
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400">{product.growth}</span>
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    {product.name}
+                  </h3>
+                  <p className="mb-3 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                    {product.tagline}
+                  </p>
+                  <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-zinc-500 dark:text-zinc-500">
+                    {product.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
 
@@ -207,17 +273,17 @@ export default async function Home() {
           </div>
 
           <div className="space-y-4">
-            {MOCK_EVENTS.map((event) => (
+            {events.map((event) => (
               <div
                 key={event.id}
                 className="flex items-center gap-6 rounded-2xl border border-zinc-200 p-6 transition hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
               >
                 <div className="flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
                   <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                    {new Date(event.date).toLocaleDateString("zh-CN", { month: "short" })}
+                    {event.time || (event.date ? new Date(event.date).toLocaleDateString("zh-CN", { month: "short" }) : "—")}
                   </span>
                   <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
-                    {new Date(event.date).getDate()}
+                    {event.date ? new Date(event.date).getDate() : "—"}
                   </span>
                 </div>
                 <div className="flex-1">
@@ -225,13 +291,18 @@ export default async function Home() {
                     {event.title}
                   </h3>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {event.location} · {event.type === "online" ? "线上" : event.type === "offline" ? "线下" : "线上线下结合"}
+                    {event.location}
+                    {event.type && ` · ${event.type === "online" ? "线上" : event.type === "offline" ? "线下" : "线上线下结合"}`}
+                    {event.source && ` · 来源: ${event.source}`}
                   </p>
+                  {event.description && (
+                    <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500 line-clamp-1">{event.description}</p>
+                  )}
                 </div>
                 <a
-                  href={event.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={event.url || "#"}
+                  target={event.url ? "_blank" : undefined}
+                  rel={event.url ? "noopener noreferrer" : undefined}
                   className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:border-zinc-900 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-300"
                 >
                   了解详情

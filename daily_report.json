@@ -1,0 +1,266 @@
+{
+  "meta": {
+    "date": "2026-05-16",
+    "day": "周六",
+    "version": "v12.0"
+  },
+  "pulse": {
+    "new_today": 7,
+    "new_growth": "↑ 23%",
+    "hot_project": "openclaw",
+    "hot_stars": "372.1k",
+    "papers_count": 2,
+    "events_count": 2
+  },
+  "events": [
+    {
+      "title": "Folio · Agent 发布 每日日报",
+      "type": "online",
+      "description": "OpenClaw 生态 + AI Coding 领域最新产品、工具与趋势每日追踪",
+      "time": "08:00",
+      "location": "Folio 服务号",
+      "source": "Folio"
+    },
+    {
+      "title": "AI Coding 周度热点回顾",
+      "type": "online",
+      "description": "本周 AI Coding 领域重要进展与下周展望",
+      "time": "每周一 08:00",
+      "location": "自动推送",
+      "source": "Folio"
+    }
+  ],
+  "leaderboard": [
+    {
+      "rank": 1,
+      "name": "openclaw",
+      "org": "Claw生态",
+      "stars": "372.1k",
+      "growth": "↑ 6.3k",
+      "tag": "new",
+      "progress": 100
+    },
+    {
+      "rank": 2,
+      "name": "hermes-agent",
+      "org": "Claw生态",
+      "stars": "151.9k",
+      "growth": "↑ 6.3k",
+      "tag": "new",
+      "progress": 40
+    },
+    {
+      "rank": 3,
+      "name": "cc-switch",
+      "org": "Claw生态",
+      "stars": "71.8k",
+      "growth": "↑ 6.3k",
+      "tag": "new",
+      "progress": 19
+    },
+    {
+      "rank": 4,
+      "name": "awesome-openclaw-skills",
+      "org": "Claw生态",
+      "stars": "48.7k",
+      "growth": "↑ 6.3k",
+      "tag": "new",
+      "progress": 13
+    },
+    {
+      "rank": 5,
+      "name": "claude-mem",
+      "org": "Claw生态",
+      "stars": "75.9k",
+      "growth": "↑ 6.3k",
+      "tag": "new",
+      "progress": 20
+    },
+    {
+      "rank": 6,
+      "name": "Notion AI 2.0",
+      "org": "Product Hunt",
+      "stars": "3.5k",
+      "growth": "↑ 6.0k",
+      "tag": "new",
+      "progress": 0
+    },
+    {
+      "rank": 7,
+      "name": "cc-connect",
+      "org": "GitHub",
+      "stars": "9367",
+      "growth": "↑ 5.8k",
+      "tag": "new",
+      "progress": 2
+    },
+    {
+      "rank": 8,
+      "name": "openagent",
+      "org": "GitHub",
+      "stars": "4732",
+      "growth": "↑ 5.8k",
+      "tag": "new",
+      "progress": 1
+    },
+    {
+      "rank": 9,
+      "name": "OpenMontage",
+      "org": "GitHub",
+      "stars": "3729",
+      "growth": "↑ 5.8k",
+      "tag": "new",
+      "progress": 1
+    },
+    {
+      "rank": 10,
+      "name": "cline",
+      "org": "GitHub",
+      "stars": "61849",
+      "growth": "↑ 5.8k",
+      "tag": "new",
+      "progress": 16
+    }
+  ],
+  "trend": [
+    {
+      "day": "Mon",
+      "this_week": 57,
+      "last_week": 60
+    },
+    {
+      "day": "Tue",
+      "this_week": 68,
+      "last_week": 47
+    },
+    {
+      "day": "Wed",
+      "this_week": 54,
+      "last_week": 46
+    },
+    {
+      "day": "Thu",
+      "this_week": 59,
+      "last_week": 55
+    },
+    {
+      "day": "Fri",
+      "this_week": 71,
+      "last_week": 46
+    },
+    {
+      "day": "Today",
+      "this_week": 87,
+      "last_week": 46
+    }
+  ],
+  "news": [
+    {
+      "icon": "🚀",
+      "title": "openclaw",
+      "description": "Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞",
+      "date": "2026-05-16",
+      "source": "ClawHub"
+    },
+    {
+      "icon": "⚡",
+      "title": "hermes-agent",
+      "description": "The agent that grows with you",
+      "date": "2026-05-16",
+      "source": "ClawHub"
+    },
+    {
+      "icon": "🔧",
+      "title": "cc-switch",
+      "description": "A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode,",
+      "date": "2026-05-16",
+      "source": "ClawHub"
+    },
+    {
+      "icon": "💰",
+      "title": "awesome-openclaw-skills",
+      "description": "The awesome collection of OpenClaw skills. 5,400+ skills filtered and categorize",
+      "date": "2026-05-16",
+      "source": "ClawHub"
+    }
+  ],
+  "papers": [
+    {
+      "number": "01",
+      "title": "ATLAS: Agentic or Latent Visual Reasoning? One Word is Enoug",
+      "abstract": "Visual reasoning, often interleaved with intermediate visual states, has emerged as a promising direction in the fiel...",
+      "folio_reason": "来源 arXiv，评分 28.6，值得关注的 Agent 方向探索",
+      "source": "arXiv",
+      "publish_date": "2026-05-16",
+      "citations": ""
+    },
+    {
+      "number": "02",
+      "title": "FutureSim: Replaying World Events to Evaluate Adaptive Agent",
+      "abstract": "AI agents are being increasingly deployed in dynamic, open-ended environments that require adapting to new informatio...",
+      "folio_reason": "来源 arXiv，评分 28.6，值得关注的 Agent 方向探索",
+      "source": "arXiv",
+      "publish_date": "2026-05-16",
+      "citations": ""
+    }
+  ],
+  "launches": [
+    {
+      "class": "Tool",
+      "command_class": "TOOL",
+      "name": "openclaw",
+      "description": "Your own personal AI assistant. Any OS. Any Platform. The lobster way. 🦞",
+      "tags": [
+        "Claw生态",
+        "Agent",
+        "官方"
+      ],
+      "stars": "372.1k",
+      "growth": "↑ 6.3k"
+    },
+    {
+      "class": "Tool",
+      "command_class": "TOOL",
+      "name": "hermes-agent",
+      "description": "The agent that grows with you",
+      "tags": [
+        "Claw生态",
+        "Agent"
+      ],
+      "stars": "151.9k",
+      "growth": "↑ 6.3k"
+    },
+    {
+      "class": "Tool",
+      "command_class": "TOOL",
+      "name": "cc-switch",
+      "description": "A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode,",
+      "tags": [
+        "Claw生态",
+        "Agent"
+      ],
+      "stars": "71.8k",
+      "growth": "↑ 6.3k"
+    },
+    {
+      "class": "Tool",
+      "command_class": "TOOL",
+      "name": "awesome-openclaw-skills",
+      "description": "The awesome collection of OpenClaw skills. 5,400+ skills filtered and categorize",
+      "tags": [
+        "Claw生态",
+        "Agent"
+      ],
+      "stars": "48.7k",
+      "growth": "↑ 6.3k"
+    }
+  ],
+  "insight": {
+    "content": "今日榜首 **openclaw** 评分 86.3，⭐ 372.1k，来自 GitHub。 本周 OpenClaw 生态新增 **14** 个高评分项目，涵盖 Agent、Coding、Framework 等多个方向。 **GitHub** 是今日情报的主要来源（10 个项目），建议持续关注该平台的 trending 列表。",
+    "author": "Folio, 2026-05-16"
+  },
+  "tomorrow": {
+    "question": "OpenClaw 生态下一个爆发点在哪里？",
+    "hint": "观察 ClawHub 社区的 Skill 更新"
+  }
+}
