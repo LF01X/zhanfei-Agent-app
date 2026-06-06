@@ -1,0 +1,143 @@
+openapi: 3.0.3
+info:
+  title: 展飞智媒 — 活动动态 API
+  version: 1.0.0-draft
+  description: |
+    活动主办方推送 AI Agent 相关活动到展飞智媒平台。
+
+    认证方式：apiKey（见 securitySchemes）
+    频率限制：待上线后根据实际数据调整，当前不做硬限制
+servers:
+  - url: https://zhanfeimedia.com/api
+
+security:
+  - apiKeyAuth: []
+
+paths:
+  /events:
+    post:
+      summary: 推送活动
+      operationId: submitEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventSubmission'
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, id]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: string
+                    example: "event-1717670400000"
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 认证失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 频率限制（后续接入）
+
+    get:
+      summary: 获取活动流
+      operationId: getEvents
+      responses:
+        '200':
+          description: 活动列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventFeedItem'
+
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: 主办方 API Key。申请方式见 docs/api/events-spec.md §5.2
+
+  schemas:
+    EventSubmission:
+      type: object
+      required:
+        - eventName
+        - type
+        - time
+        - organizer
+        - description
+        - url
+      properties:
+        eventName:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "AI Agent Meetup Shanghai"
+        type:
+          type: string
+          enum: [online, offline, hybrid]
+          example: "offline"
+        time:
+          type: string
+          format: date-time
+          description: ISO 8601。必须未来时间，不超过 365 天后。
+          example: "2026-06-15T14:00:00+08:00"
+        location:
+          type: string
+          maxLength: 500
+          description: 线下/混合活动必填
+        organizer:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        url:
+          type: string
+          format: uri
+          pattern: '^https://'
+          description: 活动报名/详情链接，必须 HTTPS
+
+    EventFeedItem:
+      allOf:
+        - $ref: '#/components/schemas/EventSubmission'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: 系统生成
+            source:
+              type: string
+              enum: [organizer-api, folio-pipeline]
+            verified:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
