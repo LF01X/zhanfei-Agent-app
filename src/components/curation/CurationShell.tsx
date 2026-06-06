@@ -1,19 +1,3 @@
-/**
- * CurationShell.tsx
- *
- * 展飞的核心交互组件
- *
- * Phase 1（当前）：叙事优先界面
- * - 今日脉搏（一句话）
- * - 策展叙事（一段话）
- * - Featured Agents（嵌入式叙事，不是卡片）
- * - 预设问题（引导探索）
- *
- * Phase 2（后续）：接入对话功能
- * - 用户点击预设问题 → 展开对话
- * - 对话流中呈现数据和洞察
- */
-
 'use client'
 
 import { useState } from 'react'
@@ -39,114 +23,110 @@ export function CurationShell({ initialData }: { initialData: CurationData }) {
       </header>
 
       {/* 主内容 */}
-      <main className="pt-12 pb-24 max-w-2xl mx-auto px-6">
-        <CurationContent curation={curation} />
+      <main className="pt-12 pb-24 max-w-2xl mx-auto px-6 space-y-12">
+        {/* 今日脉搏 */}
+        <section className="space-y-3">
+          <div className="flex items-baseline gap-3">
+            <div className="text-5xl font-light text-zinc-100">
+              {curation.pulse.new_today}
+            </div>
+            <div className="text-zinc-500 text-sm">个新品今日发布</div>
+          </div>
+          <div className="text-zinc-600 text-xs">
+            增长 {curation.pulse.new_growth} · 最热项目 {curation.pulse.hot_project} ({curation.pulse.hot_stars.toLocaleString()} stars)
+          </div>
+        </section>
+
+        {/* 策展叙事 */}
+        <section className="space-y-4">
+          <div className="text-zinc-400 text-sm leading-relaxed">
+            {curation.meta.version} · {curation.pulse.new_today} 个新品，{curation.papers.length} 篇论文，{curation.events.length} 个活动。
+            这不是列表，是策展——每个入选的 Agent，都值得你花时间。
+          </div>
+        </section>
+
+        {/* Featured Launches */}
+        {curation.launches.length > 0 && (
+          <section className="space-y-6">
+            <div className="text-zinc-500 text-xs tracking-widest uppercase">今日策展</div>
+            {curation.launches.map((launch, i) => (
+              <LaunchCard key={i} launch={launch} />
+            ))}
+          </section>
+        )}
+
+        {/* Leaderboard */}
+        {curation.leaderboard.length > 0 && (
+          <section className="space-y-6">
+            <div className="text-zinc-500 text-xs tracking-widest uppercase">排行榜</div>
+            {curation.leaderboard.map((entry) => (
+              <LeaderboardCard key={entry.rank} entry={entry} />
+            ))}
+          </section>
+        )}
+
+        {/* 策展人判断 */}
+        <section className="border-t border-zinc-800/50 pt-8 space-y-4">
+          <div className="text-zinc-500 text-xs tracking-widest uppercase">策展人笔记</div>
+          <blockquote className="text-zinc-300 text-sm leading-relaxed italic border-l-2 border-zinc-700 pl-4">
+            {curation.insight.content}
+          </blockquote>
+          <div className="text-zinc-600 text-xs">— {curation.insight.author}</div>
+        </section>
+
+        {/* 明日预告 */}
+        {curation.tomorrow.question && (
+          <section className="bg-zinc-900/50 rounded-lg p-4 space-y-2">
+            <div className="text-zinc-400 text-sm font-medium">明日追问</div>
+            <div className="text-zinc-300 text-sm">{curation.tomorrow.question}</div>
+            <div className="text-zinc-600 text-xs">{curation.tomorrow.hint}</div>
+          </section>
+        )}
       </main>
     </div>
   )
 }
 
-// ─── 内容组件 ───────────────────────────────────────────────────────────────────
+// ─── 子组件 ─────────────────────────────────────────────────────────────────────
 
-function CurationContent({ curation }: { curation: CurationData }) {
+function LaunchCard({ launch }: { launch: CurationData['launches'][0] }) {
   return (
-    <div className="space-y-12">
-      {/* 脉搏 */}
-      <section>
-        <div className="text-zinc-600 text-[11px] tracking-[0.2em] uppercase mb-3">今日脉搏</div>
-        <h1 className="text-xl font-light text-zinc-100 leading-snug tracking-tight">
-          {curation.pulse}
-        </h1>
-        <div className="mt-2 text-zinc-700 text-[11px]">{curation.date}</div>
-      </section>
-
-      {/* 叙事 */}
-      <section>
-        <p className="text-zinc-400 text-base leading-relaxed font-light">
-          {curation.narrative}
-        </p>
-      </section>
-
-      {/* 策展笔记 */}
-      {curation.insight && (
-        <section className="border-l border-zinc-700 pl-4 -ml-px">
-          <div className="text-zinc-600 text-[11px] tracking-[0.2em] uppercase mb-2">策展笔记</div>
-          <p className="text-zinc-300 text-sm leading-relaxed">{curation.insight}</p>
-        </section>
-      )}
-
-      {/* Featured Agents */}
-      {curation.featured.length > 0 && (
-        <section className="space-y-8">
-          <div className="text-zinc-600 text-[11px] tracking-[0.2em] uppercase">今日关注</div>
-          {curation.featured.map((agent, i) => (
-            <AgentCard key={agent.name} agent={agent} index={i} />
+    <div className="space-y-3 pb-6 border-b border-zinc-800/30 last:border-0">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-zinc-100 text-sm font-medium">{launch.name}</div>
+          <div className="text-zinc-500 text-xs mt-1">{launch.class} · {launch.command_class}</div>
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-zinc-300 text-sm font-mono">{launch.stars >= 1000 ? `${(launch.stars / 1000).toFixed(1)}k` : launch.stars}</div>
+          <div className="text-zinc-500 text-xs">{launch.growth}</div>
+        </div>
+      </div>
+      <div className="text-zinc-400 text-sm leading-relaxed">{launch.description}</div>
+      {launch.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {launch.tags.map((tag) => (
+            <span key={tag} className="text-zinc-600 text-xs bg-zinc-900 px-2 py-1 rounded">
+              {tag}
+            </span>
           ))}
-        </section>
-      )}
-
-      {/* 活动 */}
-      {curation.events.length > 0 && (
-        <section className="space-y-4">
-          <div className="text-zinc-600 text-[11px] tracking-[0.2em] uppercase">行业活动</div>
-          {curation.events.map((event, i) => (
-            <div key={i} className="flex gap-3 text-sm">
-              <span className="text-zinc-700 shrink-0 text-lg leading-none mt-0.5">
-                {event.type === 'ONLINE' ? '○' : event.type === 'OFFLINE' ? '◉' : '◇'}
-              </span>
-              <div>
-                <div className="text-zinc-300">{event.title}</div>
-                <div className="text-zinc-600 text-xs mt-0.5">{event.description}</div>
-              </div>
-            </div>
-          ))}
-        </section>
+        </div>
       )}
     </div>
   )
 }
 
-// ─── Agent 卡片（嵌入式叙事）─────────────────────────────────────────────────────
-
-function AgentCard({ agent, index }: { agent: CurationData['featured'][0]; index: number }) {
+function LeaderboardCard({ entry }: { entry: CurationData['leaderboard'][0] }) {
   return (
-    <div className="group">
-      {/* 序号 + 名称 */}
-      <div className="flex items-baseline gap-3 mb-1.5">
-        <span className="text-zinc-800 text-xs tabular-nums w-5 text-right">{index + 1}</span>
-        <h3 className="text-zinc-200 text-sm font-medium">{agent.name}</h3>
-        <span className="text-zinc-700 text-[10px] uppercase tracking-wider">{agent.category}</span>
+    <div className="flex items-center gap-4 py-3 border-b border-zinc-800/30 last:border-0">
+      <div className="text-zinc-600 text-sm w-6 text-right">{entry.rank}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-zinc-200 text-sm font-medium truncate">{entry.name}</div>
+        <div className="text-zinc-500 text-xs">{entry.org}</div>
       </div>
-
-      {/* Tagline */}
-      <p className="text-zinc-500 text-sm leading-relaxed mb-2 ml-8">{agent.tagline}</p>
-
-      {/* 信号 */}
-      <div className="ml-8 flex items-center gap-3 text-xs">
-        {agent.stars > 0 && (
-          <span className="text-zinc-600 tabular-nums">★ {agent.stars.toLocaleString()}</span>
-        )}
-        {agent.growth > 0 && (
-          <span className={agent.growth > 30 ? 'text-emerald-600' : 'text-zinc-600'}>
-            ↑ {agent.growth}/d
-          </span>
-        )}
-        {agent.tags.slice(0, 2).map(tag => (
-          <span key={tag} className="text-zinc-700">#{tag}</span>
-        ))}
-      </div>
-
-      {/* 策展判断 */}
-      <div className="ml-8 mt-1.5">
-        <span className={`text-[11px] px-2 py-0.5 rounded-sm ${
-          agent.verdict === 'explore'
-            ? 'bg-emerald-950/30 text-emerald-500 border border-emerald-900/40'
-            : agent.verdict === 'adopt'
-            ? 'bg-blue-950/30 text-blue-400 border border-blue-900/40'
-            : 'bg-zinc-900/50 text-zinc-500 border border-zinc-800/50'
-        }`}>
-          {agent.verdict === 'explore' ? '深入' : agent.verdict === 'adopt' ? '採用' : '关注'}
-        </span>
+      <div className="text-right shrink-0">
+        <div className="text-zinc-300 text-sm font-mono">{entry.stars >= 1000 ? `${(entry.stars / 1000).toFixed(0)}k` : entry.stars}</div>
+        <div className="text-zinc-500 text-xs">{entry.growth}</div>
       </div>
     </div>
   )
