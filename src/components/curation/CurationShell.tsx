@@ -16,43 +16,13 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { CurationData } from './types'
 
 // ─── 主组件 ─────────────────────────────────────────────────────────────────────
 
-export function CurationShell() {
-  const [curation, setCuration] = useState<CurationData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    fetch('/api/curation')
-      .then(res => res.json())
-      .then(data => {
-        setCuration(data)
-        setIsLoading(false)
-      })
-      .catch(() => setIsLoading(false))
-  }, [])
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="text-zinc-500 text-sm tracking-wider uppercase">展飞智媒</div>
-          <div className="w-5 h-5 border-2 border-zinc-700 border-t-zinc-400 rounded-full animate-spin mx-auto" />
-        </div>
-      </div>
-    )
-  }
-
-  if (!curation) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-100 flex items-center justify-center">
-        <div className="text-zinc-500">暂无策展内容</div>
-      </div>
-    )
-  }
+export function CurationShell({ initialData }: { initialData: CurationData }) {
+  const [curation] = useState<CurationData>(initialData)
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
