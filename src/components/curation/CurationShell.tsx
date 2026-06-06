@@ -1,33 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import type { CurationData, ActivityFeedItem } from './types'
+import type { CurationData, Launch, LeaderboardEntry, ActivityFeedItem } from './types'
 
-// ─── 主组件 ─────────────────────────────────────────────────────────────────────
-
-export function CurationShell({
-  curation,
-  feed
-}: {
-  curation: CurationData
-  feed: ActivityFeedItem[]
-}) {
+export default function CurationShell({ data }: { data: CurationData }) {
   const [activeView, setActiveView] = useState<'pulse' | 'feed'>('pulse')
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100">
-      {/* 顶部栏 */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-800/50">
-        <div className="max-w-2xl mx-auto px-6 h-12 flex items-center justify-between">
-          <div className="text-xs text-zinc-500 tracking-widest uppercase">展飞智媒</div>
-
-          {/* 视图切换 */}
-          <div className="flex items-center gap-1">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+      {/* Header */}
+      <header className="border-b border-zinc-800/50">
+        <div className="max-w-2xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium tracking-tight text-zinc-100">展飞智媒</span>
+            <span className="text-[10px] text-zinc-500 font-mono">Understanding Engine</span>
+          </div>
+          <div className="flex items-center gap-1 text-xs">
             <button
               onClick={() => setActiveView('pulse')}
-              className={`text-xs px-3 py-1 rounded transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors ${
                 activeView === 'pulse'
-                  ? 'bg-zinc-800 text-zinc-200'
+                  ? 'bg-zinc-800 text-zinc-100'
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
@@ -35,213 +28,211 @@ export function CurationShell({
             </button>
             <button
               onClick={() => setActiveView('feed')}
-              className={`text-xs px-3 py-1 rounded transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors ${
                 activeView === 'feed'
-                  ? 'bg-zinc-800 text-zinc-200'
+                  ? 'bg-zinc-800 text-zinc-100'
                   : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
               新品动态
             </button>
           </div>
-
-          {curation.refreshedAt && (
-            <div className="text-xs text-zinc-700 hidden sm:block">
-              {new Date(curation.refreshedAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          )}
         </div>
       </header>
 
-      {/* 主内容 */}
-      <main className="pt-16 pb-24 max-w-2xl mx-auto px-6">
+      <main className="max-w-2xl mx-auto px-6 py-12">
         {activeView === 'pulse' ? (
-          <PulseView curation={curation} />
+          <PulseView data={data} />
         ) : (
-          <FeedView feed={feed} />
+          <FeedView launches={data.launches || []} />
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-zinc-800/50 mt-24">
+        <div className="max-w-2xl mx-auto px-6 py-8 flex items-center justify-between text-xs text-zinc-600">
+          <span>Folio · Understanding Engine</span>
+          <span>{data.meta?.date || new Date().toISOString().slice(0, 10)}</span>
+        </div>
+      </footer>
     </div>
   )
 }
 
-// ─── 今日脉搏视图 ────────────────────────────────────────────────────────────────
+/* ── Pulse View ───────────────────────────────────────────── */
 
-function PulseView({ curation }: { curation: CurationData }) {
+function PulseView({ data }: { data: CurationData }) {
+  const launches = data.launches || []
+  const leaderboard = data.leaderboard || []
+  const insight = data.insight
+  const tomorrow = data.tomorrow
+  const topItem = leaderboard[0]
+
   return (
-    <div className="space-y-12">
-      {/* Pulse：今日脉搏 */}
+    <div className="space-y-16">
+      {/* Pulse — 数字冲击力 */}
       <section className="space-y-4">
-        <div className="flex items-baseline gap-3">
-          <div className="text-5xl font-light text-zinc-100">
-            {curation.pulse.new_today}
+        <div className="space-y-1">
+          <div className="text-6xl font-bold tracking-tight text-cyan-400 leading-none">
+            {launches.length}
           </div>
-          <div className="text-zinc-500 text-sm">个新品今日发布</div>
+          <div className="text-lg text-zinc-400 font-light">
+            个新品今日发布
+          </div>
+          {topItem && (
+            <div className="text-sm text-zinc-500 mt-2">
+              最热 {topItem.name} ({topItem.stars}⭐) · {topItem.growth}
+            </div>
+          )}
         </div>
-
-        <div className="text-zinc-600 text-xs font-mono">
-          {curation.pulse.new_growth} · {curation.pulse.hot_project} ({curation.pulse.hot_stars.toLocaleString()} stars)
-        </div>
-
-        {/* Folio 判断 */}
-        <blockquote className="text-zinc-300 text-lg leading-relaxed italic border-l-2 border-cyan-400/50 pl-4 mt-6">
-          {curation.pulse.new_today > 0
-            ? `今日有 ${curation.launches?.[0]?.name || '多个新品'} 值得关注。${curation.insight.content}`
-            : '今日无特别突出的动态。Agent 生态的演进是持续的，不是每天都有大新闻。'
-          }
-        </blockquote>
-        <div className="text-zinc-600 text-xs">— {curation.insight.author}</div>
       </section>
 
-      {/* Signals：今日策展（三段式理解） */}
-      {curation.launches.length > 0 && (
-        <section className="space-y-8 pt-8 border-t border-zinc-800/50">
-          <div className="text-zinc-500 text-xs tracking-widest uppercase">今日信号</div>
-          {curation.launches.map((launch, i) => (
-            <SignalCard key={i} launch={launch} />
-          ))}
+      {/* Folio Insight — 一句话判断 */}
+      {insight && (
+        <section className="space-y-4">
+          <div className="h-px bg-zinc-800/50" />
+          <blockquote className="space-y-3">
+            <p className="text-lg text-zinc-300 leading-relaxed font-light">
+              {insight.content}
+            </p>
+            <footer className="text-xs text-zinc-600 font-mono">
+              — {insight.author}
+            </footer>
+          </blockquote>
+          <div className="h-px bg-zinc-800/50" />
         </section>
       )}
 
-      {/* 明日追问 */}
-      {curation.tomorrow.question && (
-        <section className="bg-zinc-900/50 rounded-lg p-4 space-y-2 mt-8">
-          <div className="text-zinc-400 text-sm font-medium">明日追问</div>
-          <div className="text-zinc-300 text-sm">{curation.tomorrow.question}</div>
-          <div className="text-zinc-600 text-xs">{curation.tomorrow.hint}</div>
+      {/* Signals — Agent 列表 */}
+      <section className="space-y-6">
+        <h2 className="text-sm font-medium text-zinc-500 tracking-wider uppercase">
+          今日信号
+        </h2>
+        <div className="space-y-8">
+          {launches.slice(0, 8).map((l, i) => (
+            <SignalCardView key={l.name + i} launch={l} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Tomorrow — 明日追问 */}
+      {tomorrow && (
+        <section className="space-y-4">
+          <div className="h-px bg-zinc-800/50" />
+          <div className="space-y-3">
+            <div className="text-sm font-medium text-zinc-500 tracking-wider uppercase">
+              明日追问
+            </div>
+            <p className="text-zinc-400 italic">
+              &ldquo;{tomorrow.question}&rdquo;
+            </p>
+            {tomorrow.hint && (
+              <p className="text-sm text-zinc-600">
+                💡 {tomorrow.hint}
+              </p>
+            )}
+          </div>
         </section>
       )}
     </div>
   )
 }
 
-// ─── 新品动态流视图 ──────────────────────────────────────────────────────────────
+/* ── Signal Card ─────────────────────────────────────────── */
 
-function FeedView({ feed }: { feed: ActivityFeedItem[] }) {
+function SignalCardView({ launch, index }: { launch: Launch; index: number }) {
+  const [expanded, setExpanded] = useState(false)
+
   return (
-    <div className="space-y-8">
-      <div className="text-zinc-500 text-xs tracking-widest uppercase">新品动态流</div>
-
-      {feed.length === 0 ? (
-        <div className="text-zinc-600 text-sm">暂无动态，产品方 API 接入中...</div>
-      ) : (
-        <div className="space-y-6">
-          {feed.map((item) => (
-            <FeedItemCard key={item.id} item={item} />
-          ))}
-        </div>
-      )}
-
-      {/* 产品方 API 入口 */}
-      <section className="bg-zinc-900/30 rounded-lg p-4 space-y-2 border border-zinc-800/50">
-        <div className="text-zinc-400 text-sm font-medium">产品方接入</div>
-        <div className="text-zinc-500 text-xs leading-relaxed">
-          如果你是 Agent 产品方，可以通过 API 推送新品动态到展飞。
-          <br />
-          支持格式：JSON POST to <code className="text-cyan-400/70">/api/feed</code>
-        </div>
-        <a
-          href="/docs/api"
-          className="text-cyan-400/70 text-xs hover:text-cyan-400 transition-colors inline-block mt-2"
-        >
-          查看 API 文档 →
-        </a>
-      </section>
-    </div>
-  )
-}
-
-// ─── 子组件 ─────────────────────────────────────────────────────────────────────
-
-/** SignalCard：三段式理解（为什么重要 / 解决什么 / 谁该关心） */
-function SignalCard({ launch }: { launch: CurationData['launches'][0] }) {
-  return (
-    <div className="space-y-4 pb-8 border-b border-zinc-800/30 last:border-0">
-      {/* 标题 + 数据 */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-zinc-100 text-base font-medium">{launch.name}</div>
-          <div className="text-zinc-500 text-xs mt-1">{launch.class} · {launch.command_class}</div>
-        </div>
-        <div className="text-right shrink-0">
-          <div className="text-zinc-300 text-sm font-mono">
-            {launch.stars >= 1000 ? `${(launch.stars / 1000).toFixed(1)}k` : launch.stars}
-          </div>
-          <div className="text-zinc-500 text-xs">{launch.growth}</div>
-        </div>
+    <article className="space-y-3 group">
+      {/* 序号 + 名字 + star */}
+      <div className="flex items-baseline gap-3">
+        <span className="text-xs text-zinc-700 font-mono w-4">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <h3 className="text-base font-medium text-zinc-200 group-hover:text-cyan-400 transition-colors">
+          {launch.name}
+        </h3>
+        <span className="text-[10px] text-zinc-600 font-mono ml-auto">
+          {launch.stars}⭐ · {launch.growth}
+        </span>
       </div>
 
-      {/* 三段式理解 */}
-      <div className="space-y-3 text-sm">
-        <div>
-          <div className="text-zinc-500 text-xs uppercase tracking-wider mb-1">为什么现在重要</div>
-          <div className="text-zinc-300 leading-relaxed">
-            {launch.class.includes('Protocol') || launch.tags.includes('A2A')
-              ? `${launch.name} 实现了 ${launch.tags.join(' / ')} 协议，这是多 Agent 协作的标准化起点。`
-              : `${launch.name} 在 ${launch.command_class} 领域持续演进，值得关注其设计思路。`
-            }
-          </div>
-        </div>
-
-        <div>
-          <div className="text-zinc-500 text-xs uppercase tracking-wider mb-1">解决什么问题</div>
-          <div className="text-zinc-400 leading-relaxed">{launch.description}</div>
-        </div>
-
-        <div>
-          <div className="text-zinc-500 text-xs uppercase tracking-wider mb-1">谁应该关心</div>
-          <div className="text-zinc-500 leading-relaxed text-xs">
-            {launch.class.includes('Protocol')
-              ? '如果你在做多 Agent 系统，这是你必须看的。'
-              : launch.stars > 10000
-              ? '已经成为社区认可的工具，值得了解它的设计思路。'
-              : '在早期阶段，方向值得关注。'
-            }
-          </div>
-        </div>
-      </div>
-
-      {/* 标签 */}
-      {launch.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {launch.tags.map((tag) => (
-            <span key={tag} className="text-zinc-600 text-xs bg-zinc-900 px-2 py-1 rounded">
-              {tag}
+      {/* 描述 + 分类 */}
+      <div className="pl-7 space-y-2">
+        {launch.description && (
+          <p className="text-sm text-zinc-500 leading-relaxed">{launch.description}</p>
+        )}
+        <div className="flex flex-wrap gap-1.5">
+          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800/50 text-zinc-500">
+            {launch.class}
+          </span>
+          {launch.tags?.map(t => (
+            <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-zinc-800/50 text-zinc-500">
+              {t}
             </span>
           ))}
         </div>
+      </div>
+
+      {/* 展开更多 */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="pl-7 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+      >
+        {expanded ? '− 收起' : '+ 详情'}
+      </button>
+
+      {expanded && (
+        <div className="pl-7 space-y-2 text-sm text-zinc-500">
+          <p>分类: {launch.class} / {launch.command_class}</p>
+        </div>
       )}
-    </div>
+
+      {/* 分隔线 */}
+      {index < 7 && <div className="h-px bg-zinc-800/30 ml-7" />}
+    </article>
   )
 }
 
-/** FeedItemCard：新品动态流卡片 */
-function FeedItemCard({ item }: { item: ActivityFeedItem }) {
-  return (
-    <div className="flex items-start gap-4 py-3 border-b border-zinc-800/30 last:border-0">
-      {/* 类型标识 */}
-      <div className={`shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 ${
-        item.type === 'launch' ? 'bg-cyan-400' :
-        item.type === 'update' ? 'bg-blue-400' :
-        'bg-amber-400'
-      }`} />
+/* ── Feed View ───────────────────────────────────────────── */
 
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-baseline gap-2">
-          <span className="text-zinc-200 text-sm font-medium">{item.agentName}</span>
-          <span className="text-zinc-500 text-xs">{item.agentOrg}</span>
+function FeedView({ launches }: { launches: Launch[] }) {
+  if (launches.length === 0) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-sm font-medium text-zinc-500 tracking-wider uppercase">
+          新品动态
+        </h2>
+        <div className="text-sm text-zinc-600">
+          暂无动态。产品方可通过 API 推送新品信息。
         </div>
-        <div className="text-zinc-400 text-sm leading-relaxed">{item.description}</div>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-zinc-600">{item.stars >= 1000 ? `${(item.stars / 1000).toFixed(1)}k` : item.stars} stars</span>
-          <span className="text-zinc-600">{item.growth}</span>
-          <span className="text-zinc-700">
-            {new Date(item.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
-          </span>
-          {item.verified && (
-            <span className="text-cyan-400/70 text-xs">✓ 已验证</span>
-          )}
-        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-sm font-medium text-zinc-500 tracking-wider uppercase">
+        新品动态
+      </h2>
+      <div className="space-y-6">
+        {launches.map((l, i) => (
+          <article key={l.name + i} className="space-y-2 pl-7 border-l border-zinc-800/50 relative">
+            <div className="absolute -left-1 top-1.5 w-2 h-2 rounded-full bg-cyan-600/60" />
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-sm font-medium text-zinc-300">{l.name}</h3>
+              <span className="text-[10px] text-zinc-600 font-mono">{l.class}</span>
+            </div>
+            {l.description && (
+              <p className="text-sm text-zinc-500 leading-relaxed">{l.description}</p>
+            )}
+            <div className="flex items-center gap-2 text-xs text-zinc-600">
+              <span>{l.stars}⭐</span>
+              <span>{l.growth}</span>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   )

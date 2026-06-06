@@ -13,8 +13,8 @@ export interface CurationData {
   news: NewsItem[]
   papers: Paper[]
   launches: Launch[]
-  insight: Insight
-  tomorrow: Tomorrow
+  insight: Insight | null
+  tomorrow: Tomorrow | null
   refreshedAt?: string
 }
 
@@ -65,8 +65,8 @@ export interface LeaderboardEntry {
   rank: number
   name: string
   org: string
-  stars: number
-  growth: string
+  stars: string    // 如 "372.1k"
+  growth: string   // 如 "↑ 6.3k"
   tag: string
   progress: number
 }
@@ -101,8 +101,8 @@ export interface Launch {
   name: string
   description: string
   tags: string[]
-  stars: number
-  growth: string
+  stars: string    // 如 "372.1k"
+  growth: string   // 如 "↑ 6.3k"
 }
 
 export interface Insight {
@@ -113,4 +113,19 @@ export interface Insight {
 export interface Tomorrow {
   question: string
   hint: string
+}
+
+// ─── Signal Card（前端展示用，从 Launch 转化） ───────────────────────
+
+export interface SignalCard {
+  id: string
+  agentName: string
+  repo: string
+  description: string
+  whyNow: string
+  whatProblem: string
+  whoCares: string
+  starCount: number
+  weeklyGrowth: number
+  tags: string[]
 }
